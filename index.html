@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem Penjana Minit - MIA (Full Auto)</title>
+    <title>Sistem Penjana Minit - MIA</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -12,90 +12,162 @@
             --primary-light: #f3e8ff;
             --bg-color: #f8fafc;
             --text-main: #1e293b;
+            --border-color: #e2e8f0;
         }
 
         body { font-family: 'Poppins', sans-serif; background: var(--bg-color); color: var(--text-main); padding: 20px; margin: 0; line-height: 1.6; }
-        .container { max-width: 800px; margin: auto; background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(126, 34, 206, 0.08); }
-        .logo-container { text-align: center; margin-bottom: 10px; }
-        .logo-img { max-height: 90px; object-fit: contain; }
-        h2.title { color: var(--primary); text-align: center; font-weight: 700; margin-bottom: 30px; }
+        .container { max-width: 900px; margin: auto; background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(126, 34, 206, 0.08); }
+        h2.title { color: var(--primary); text-align: center; font-weight: 700; margin-bottom: 30px; border-bottom: 2px solid var(--primary-light); padding-bottom: 10px;}
         
         .form-group { margin-bottom: 20px; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; }
         label { font-weight: 600; display: block; margin-bottom: 8px; font-size: 0.95rem; }
         
         .label-with-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
         .btn-sync { background: #27ae60; color: white; border: none; padding: 5px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: 0.2s; }
         .btn-sync:hover { background: #219150; transform: scale(1.05); }
 
-        input, textarea { width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-size: 1rem; }
-        input:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); }
+        input, textarea { width: 100%; padding: 10px 12px; border: 2px solid var(--border-color); border-radius: 8px; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-size: 0.95rem; }
+        input:focus, textarea:focus { outline: none; border-color: var(--primary); }
         
+        /* Gaya Jadual Dinamik Borang */
+        .agenda-table-input { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        .agenda-table-input th { background: var(--primary-light); color: var(--primary); padding: 10px; text-align: left; font-size: 0.9rem; }
+        .agenda-table-input td { padding: 8px; border: 1px solid var(--border-color); vertical-align: top; }
+        .btn-add-row { background: var(--primary-light); color: var(--primary); border: 1px dashed var(--primary); width: 100%; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: 600; margin-bottom: 20px; }
+        .btn-delete-row { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+
         .btn-utama { margin-top: 10px; width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; border: none; padding: 15px; font-size: 1.1rem; font-weight: 600; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 12px rgba(126, 34, 206, 0.3); transition: 0.3s; }
         .btn-utama:hover { transform: translateY(-2px); }
-        
         .btn-word { background: linear-gradient(135deg, #2980b9, #2c3e50); }
-        .btn-word:hover { box-shadow: 0 6px 15px rgba(41, 128, 185, 0.4); }
 
         #outputArea { display: none; }
 
-        /* GAYA UNTUK CETAKAN PDF & EXPORT WORD */
+        /* --- GAYA CETAKAN RASMI (Sama seperti PDF asal) --- */
         @media print {
-            body { background: white; padding: 0; }
-            .container { box-shadow: none; padding: 0; max-width: 100%; }
+            body { background: white; padding: 0; font-family: Arial, sans-serif; color: black; }
+            .container { box-shadow: none; padding: 0; max-width: 100%; border: none; }
             #formArea { display: none; } 
             #outputArea { display: block; }
+            
+            /* Tetapan Font Saiz Cetakan */
+            h3.doc-title { text-align: center; font-size: 14pt; font-weight: bold; margin-bottom: 30px; text-transform: uppercase; }
+            
+            .meta-table { width: 100%; margin-bottom: 30px; font-size: 11pt; }
+            .meta-table td { padding: 4px 0; vertical-align: top; }
+            .meta-table td:nth-child(1) { width: 15%; font-weight: bold; }
+            .meta-table td:nth-child(2) { width: 3%; }
+            .meta-table td:nth-child(3) { width: 82%; }
+            
+            .section-title { font-weight: bold; font-size: 11pt; margin-top: 25px; margin-bottom: 10px; text-decoration: underline; }
+            
+            .table-kehadiran { width: 100%; border-collapse: collapse; font-size: 11pt; margin-bottom: 10px; }
+            .table-kehadiran td { width: 50%; padding: 2px 10px 2px 0; vertical-align: top; border: none; }
+            
+            .content-print { white-space: pre-wrap; font-size: 11pt; line-height: 1.5; }
+            
+            /* Jadual Agenda Bercetak */
+            .official-table { width: 100%; border-collapse: collapse; margin-top: 15px; margin-bottom: 30px; font-size: 11pt; }
+            .official-table th, .official-table td { border: 1px solid black; padding: 8px; vertical-align: top; }
+            .official-table th { font-weight: bold; text-align: left; background-color: #f2f2f2 !important; -webkit-print-color-adjust: exact; }
+            .col-no { width: 10%; text-align: center; }
+            .col-perkara { width: 70%; }
+            .col-tindakan { width: 20%; text-align: center; font-style: italic; }
+            
+            /* Ruangan Tandatangan */
+            .signature-section { margin-top: 50px; font-size: 11pt; width: 100%; }
+            .sig-block { margin-bottom: 40px; }
+            .sig-line { margin-top: 50px; margin-bottom: 5px; }
+            .sig-name { font-weight: bold; text-decoration: underline; }
+            .sig-role { margin: 0; }
+            .sig-date { margin-top: 5px; }
+            
+            .pengesahan-box { margin-top: 30px; margin-bottom: 30px; }
         }
-        
-        .header-print { text-align: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px; }
-        .logo-print { max-height: 110px; margin-bottom: 15px; }
-        .details-box { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
-        h4 { color: var(--primary); border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-top: 25px;}
-        
-        .table-kehadiran { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .table-kehadiran td { width: 50%; padding: 4px 10px; vertical-align: top; font-size: 11pt; border: 1px solid #e2e8f0; }
-        
-        .content-print { white-space: pre-wrap; text-align: justify; }
-        .signature-area { display: flex; justify-content: space-between; margin-top: 60px; }
-        .signature-box { text-align: center; width: 40%; }
-        .signature-line { border-bottom: 1px dashed #000; margin: 50px 0 10px 0; }
     </style>
 </head>
 <body>
     <div class="container">
         <div id="formArea">
-            <div class="logo-container">
-                <img src="https://arleta.site/interactivelink/1610/LOGO-MIA.png" alt="Logo" class="logo-img">
-            </div>
-            <h2 class="title">Penjana Minit Automatik</h2>
+            <h2 class="title">Borang Penjana Minit MIA</h2>
             
-            <div class="form-group">
-                <label>Tajuk Mesyuarat</label>
-                <input type="text" id="tajuk" placeholder="Cth: Mesyuarat AJK Kali Ke-4">
-            </div>
-            
-            <div class="grid-2">
+            <div style="background: var(--bg-color); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 25px;">
+                <h3 style="margin-top:0; font-size: 1.1rem;">1. Maklumat Mesyuarat</h3>
                 <div class="form-group">
-                    <label>Pilih Tarikh Mesyuarat</label>
-                    <input type="date" id="tarikh" onchange="autoTarikData()">
+                    <label>Tajuk Dokumen Minit</label>
+                    <input type="text" id="tajuk" placeholder="Cth: Minit Mesyuarat Bersama Lembaga Pengelola Kali ke 46, 2026." value="Minit Mesyuarat Bersama Lembaga Pengelola Kali ke 46, 2026.">
                 </div>
-                <div class="form-group">
-                    <label>Masa</label>
-                    <input type="time" id="masa">
+                
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label>Tarikh</label>
+                        <input type="date" id="tarikh" onchange="autoTarikData()">
+                    </div>
+                    <div class="form-group">
+                        <label>Masa</label>
+                        <input type="text" id="masa" placeholder="Cth: 9.45 pagi - 2.00 petang">
+                    </div>
+                    <div class="form-group">
+                        <label>Tempat</label>
+                        <input type="text" id="tempat" placeholder="Cth: Bilik Mesyuarat Al-Fateh">
+                    </div>
                 </div>
             </div>
 
-            <div class="form-group">
+            <div style="background: var(--bg-color); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 25px;">
                 <div class="label-with-action">
-                    <label style="margin-bottom: 0;">Senarai Kehadiran</label>
-                    <button type="button" class="btn-sync" onclick="autoTarikData()">🔄 Sync Data Hari Ini</button>
+                    <h3 style="margin:0; font-size: 1.1rem;">2. Rekod Kehadiran</h3>
+                    <button type="button" class="btn-sync" onclick="autoTarikData()">🔄 Tarik Data (Sync)</button>
                 </div>
-                <textarea id="kehadiran" rows="6" placeholder="Pilih tarikh untuk menarik data kehadiran secara automatik..."></textarea>
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>Senarai Hadir</label>
+                    <textarea id="kehadiran" rows="4" placeholder="Sila tekan butang Sync untuk menarik data kehadiran..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Tidak Hadir Dengan Kenyataan</label>
+                    <textarea id="tidakHadir" rows="3" placeholder="Akan ditarik secara automatik..."></textarea>
+                </div>
             </div>
             
-            <div class="form-group">
-                <label>Perbincangan & Keputusan</label>
-                <textarea id="agenda" rows="8"></textarea>
+            <div style="background: var(--bg-color); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 25px;">
+                <h3 style="margin-top:0; font-size: 1.1rem; margin-bottom: 15px;">3. Agenda & Perbincangan</h3>
+                
+                <table class="agenda-table-input" id="tblAgendaInput">
+                    <thead>
+                        <tr>
+                            <th style="width: 15%;">Agenda / No.</th>
+                            <th style="width: 55%;">Perkara Perbincangan</th>
+                            <th style="width: 20%;">Tindakan</th>
+                            <th style="width: 10%; text-align: center;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="agendaBody">
+                        <tr>
+                            <td><input type="text" class="inp-no" placeholder="Cth: 1.0"></td>
+                            <td><textarea class="inp-perkara" rows="3" placeholder="Butiran perbincangan..."></textarea></td>
+                            <td><input type="text" class="inp-tindakan" placeholder="Cth: Makluman / Nama"></td>
+                            <td style="text-align: center;"><button class="btn-delete-row" onclick="padamBaris(this)">X</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="btn-add-row" onclick="tambahBaris()">+ Tambah Agenda Baru</button>
+            </div>
+
+            <div style="background: var(--bg-color); padding: 20px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 25px;">
+                <h3 style="margin-top:0; font-size: 1.1rem;">4. Maklumat Pegawai Pengesah</h3>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Disediakan Oleh (Nama)</label>
+                        <input type="text" id="namaSU" placeholder="Cth: Nadia binti Kandar">
+                        <input type="text" id="jawatanSU" placeholder="Jawatan" value="Setiausaha Mesyuarat" style="margin-top: 5px;">
+                    </div>
+                    <div class="form-group">
+                        <label>Disahkan Oleh (Nama)</label>
+                        <input type="text" id="namaPengerusi" placeholder="Cth: Tuan Haji Marsan bin Osman">
+                        <input type="text" id="jawatanPengerusi" placeholder="Jawatan" value="Pengerusi Lembaga Pengelola" style="margin-top: 5px;">
+                    </div>
+                </div>
             </div>
             
             <div class="grid-2">
@@ -105,30 +177,95 @@
         </div>
 
         <div id="outputArea">
-            <div class="header-print">
-                <img src="https://arleta.site/interactivelink/1610/LOGO-MIA.png" class="logo-print">
-                <h2 style="text-transform: uppercase; margin-bottom: 5px;">Maahad Tahfiz Ihya' Al Ahmadi</h2>
-                <h3 id="outTajuk" style="margin-top: 0; font-weight: normal;"></h3>
-            </div>
-            <div class="details-box">
-                <p style="margin: 5px 0;"><strong>Tarikh:</strong> <span id="outTarikh"></span> | <strong>Masa:</strong> <span id="outMasa"></span></p>
-            </div>
-            <h4>1.0 Kehadiran</h4>
+            <h3 class="doc-title" id="outTajuk"></h3>
+            
+            <table class="meta-table">
+                <tr>
+                    <td>Tarikh</td><td>:</td><td id="outTarikh"></td>
+                </tr>
+                <tr>
+                    <td>Hari</td><td>:</td><td id="outHari"></td>
+                </tr>
+                <tr>
+                    <td>Masa</td><td>:</td><td id="outMasa"></td>
+                </tr>
+                <tr>
+                    <td>Tempat</td><td>:</td><td id="outTempat"></td>
+                </tr>
+            </table>
+            
+            <div class="section-title">Kehadiran</div>
             <div id="outKehadiran"></div>
+
+            <div class="section-title">Tidak Hadir Dengan Kenyataan</div>
+            <div id="outTidakHadir" class="content-print"></div>
             
-            <h4>2.0 Perbincangan & Keputusan</h4>
-            <div id="outAgenda" class="content-print"></div>
+            <div class="section-title" style="margin-top: 30px; text-decoration: none;">Agenda;</div>
             
-            <div class="signature-area">
-                <div class="signature-box"><div class="signature-line"></div><p>(Setiausaha)</p></div>
-                <div class="signature-box"><div class="signature-line"></div><p>(Pengerusi)</p></div>
+            <table class="official-table" id="outAgendaTable">
+                <thead>
+                    <tr>
+                        <th class="col-no">Agenda</th>
+                        <th class="col-perkara">Perkara</th>
+                        <th class="col-tindakan">Tindakan</th>
+                    </tr>
+                </thead>
+                <tbody id="outAgendaBody">
+                    </tbody>
+            </table>
+            
+            <div class="signature-section">
+                <div class="sig-block">
+                    <div>Disediakan oleh</div>
+                    <div class="sig-line">.........................................................................</div>
+                    <div class="sig-name" id="outNamaSU"></div>
+                    <div class="sig-role" id="outJawatanSU"></div>
+                    <div class="sig-date">Tarikh: <span id="outTarikhSU"></span></div>
+                </div>
+
+                <div class="pengesahan-box">
+                    <div style="font-weight: bold; text-decoration: underline; margin-bottom: 10px;">Pengesahan minit mesyuarat</div>
+                    <table style="width: 100%; font-size: 11pt;">
+                        <tr><td style="width: 25%; padding-bottom: 15px;">Cadangan disahkan</td><td style="width: 3%;">:</td><td>..........................................................................................</td></tr>
+                        <tr><td>Disokong</td><td>:</td><td>..........................................................................................</td></tr>
+                    </table>
+                </div>
+
+                <div class="sig-block" style="margin-top: 40px;">
+                    <div>Disahkan oleh</div>
+                    <div class="sig-line">.........................................................................</div>
+                    <div class="sig-name" id="outNamaPengerusi"></div>
+                    <div class="sig-role" id="outJawatanPengerusi"></div>
+                    <div class="sig-date">Tarikh: ...........................................</div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         const STORAGE_KEY = 'ihya_final_v9'; 
+        const senaraiBulan = ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'];
+        const senaraiHari = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
 
+        // FUNGSI JADUAL DINAMIK BORANG
+        function tambahBaris() {
+            const tbody = document.getElementById('agendaBody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" class="inp-no" placeholder="Cth: 2.0"></td>
+                <td><textarea class="inp-perkara" rows="3" placeholder="Butiran perbincangan..."></textarea></td>
+                <td><input type="text" class="inp-tindakan" placeholder="Makluman"></td>
+                <td style="text-align: center;"><button class="btn-delete-row" onclick="padamBaris(this)">X</button></td>
+            `;
+            tbody.appendChild(tr);
+        }
+
+        function padamBaris(btn) {
+            const row = btn.parentNode.parentNode;
+            row.parentNode.removeChild(row);
+        }
+
+        // FUNGSI TARIK DATA (SYNC)
         function autoTarikData() {
             const tarikhInput = document.getElementById('tarikh').value;
             if(!tarikhInput) return;
@@ -137,51 +274,90 @@
             const tarikhID = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
 
             const rekodSediaAda = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            
             const senaraiHadir = rekodSediaAda
                 .filter(item => item.tarikhID === tarikhID && item.status === 'Hadir')
                 .map((item, index) => `${index + 1}. ${item.nama}`);
+            document.getElementById('kehadiran').value = senaraiHadir.length > 0 ? senaraiHadir.join('\n') : "Tiada rekod hadir.";
 
-            if(senaraiHadir.length > 0) {
-                document.getElementById('kehadiran').value = senaraiHadir.join('\n');
-            } else {
-                document.getElementById('kehadiran').value = "Tiada data kehadiran ditemui untuk tarikh " + tarikhID;
-            }
+            const senaraiTidakHadir = rekodSediaAda
+                .filter(item => item.tarikhID === tarikhID && item.status === 'Tidak Hadir')
+                .map((item, index) => {
+                    let sebab = item.catatan && item.catatan.trim() !== '' ? item.catatan : 'Tiada maklumat';
+                    return `${index + 1}. ${item.nama}\n   • ${sebab}`;
+                });
+            document.getElementById('tidakHadir').value = senaraiTidakHadir.length > 0 ? senaraiTidakHadir.join('\n\n') : "Tiada rekod.";
         }
 
-        function formatTarikh(inputDate) {
+        // FORMAT PENGELUARAN
+        function formatTarikhRasmi(inputDate) {
             if (!inputDate) return "";
-            const date = new Date(inputDate);
-            return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+            const d = new Date(inputDate);
+            return `${d.getDate()} ${senaraiBulan[d.getMonth()]} ${d.getFullYear()}`;
         }
 
-        function formatMasa(inputTime) {
-            if (!inputTime) return "";
-            let [hours, minutes] = inputTime.split(':');
-            let ampm = hours >= 12 ? 'PM' : 'AM';
-            hours = hours % 12 || 12;
-            return `${hours}:${minutes} ${ampm}`;
+        function formatHariRasmi(inputDate) {
+            if (!inputDate) return "";
+            const d = new Date(inputDate);
+            return senaraiHari[d.getDay()];
         }
 
-        // Fungsi bantuan untuk menyusun data ke dalam Output Area sebelum di-print/eksport
         function sediakanDataOutput() {
-            document.getElementById('outTajuk').innerText = document.getElementById('tajuk').value;
-            document.getElementById('outTarikh').innerText = formatTarikh(document.getElementById('tarikh').value);
-            document.getElementById('outMasa').innerText = formatMasa(document.getElementById('masa').value);
+            const dateVal = document.getElementById('tarikh').value;
             
-            let senaraiAsal = document.getElementById('kehadiran').value.split('\n').filter(n => n.trim() !== '');
-            let jadualHTML = '<table class="table-kehadiran">';
+            // 1. Maklumat Asas
+            document.getElementById('outTajuk').innerText = document.getElementById('tajuk').value;
+            document.getElementById('outTarikh').innerText = formatTarikhRasmi(dateVal);
+            document.getElementById('outHari').innerText = formatHariRasmi(dateVal);
+            document.getElementById('outMasa').innerText = document.getElementById('masa').value;
+            document.getElementById('outTempat').innerText = document.getElementById('tempat').value;
+            
+            // 2. Kehadiran (Format 2 Lajur Tanpa Border)
+            let senaraiAsal = document.getElementById('kehadiran').value.split('\n').filter(n => n.trim() !== '' && !n.startsWith('Tiada'));
+            let jadualKehadiran = '<table class="table-kehadiran">';
             for(let i = 0; i < senaraiAsal.length; i += 2) {
                 let lajur1 = senaraiAsal[i] || '';
                 let lajur2 = senaraiAsal[i+1] || '';
-                jadualHTML += `<tr><td>${lajur1}</td><td>${lajur2}</td></tr>`;
+                jadualKehadiran += `<tr><td>${lajur1}</td><td>${lajur2}</td></tr>`;
             }
-            jadualHTML += '</table>';
+            jadualKehadiran += '</table>';
+            document.getElementById('outKehadiran').innerHTML = jadualKehadiran;
             
-            document.getElementById('outKehadiran').innerHTML = jadualHTML;
-            document.getElementById('outAgenda').innerText = document.getElementById('agenda').value;
+            // 3. Tidak Hadir
+            document.getElementById('outTidakHadir').innerText = document.getElementById('tidakHadir').value;
+            
+            // 4. Proses Jadual Agenda Dinamik
+            const tBodyForm = document.getElementById('agendaBody');
+            const outTbody = document.getElementById('outAgendaBody');
+            outTbody.innerHTML = ''; // Kosongkan sebelum isi baru
+            
+            const rows = tBodyForm.getElementsByTagName('tr');
+            for(let i=0; i<rows.length; i++) {
+                let no = rows[i].querySelector('.inp-no').value;
+                let perkara = rows[i].querySelector('.inp-perkara').value;
+                let tindakan = rows[i].querySelector('.inp-tindakan').value;
+                
+                // Gantikan \n dengan <br> untuk kekalkan perenggan dalam sel jadual
+                perkara = perkara.replace(/\n/g, '<br>');
+                
+                let newRow = `<tr>
+                    <td class="col-no">${no}</td>
+                    <td class="col-perkara">${perkara}</td>
+                    <td class="col-tindakan">${tindakan}</td>
+                </tr>`;
+                outTbody.innerHTML += newRow;
+            }
+
+            // 5. Tandatangan
+            document.getElementById('outNamaSU').innerText = document.getElementById('namaSU').value;
+            document.getElementById('outJawatanSU').innerText = document.getElementById('jawatanSU').value;
+            document.getElementById('outTarikhSU').innerText = formatTarikhRasmi(dateVal); // Guna tarikh mesyuarat
+            
+            document.getElementById('outNamaPengerusi').innerText = document.getElementById('namaPengerusi').value;
+            document.getElementById('outJawatanPengerusi').innerText = document.getElementById('jawatanPengerusi').value;
         }
 
-        // FUNGSI 1: Simpan sebagai PDF
+        // FUNGSI PRINT PDF
         function janaMinitPDF() {
             sediakanDataOutput();
             document.getElementById('outputArea').style.display = 'block';
@@ -189,22 +365,38 @@
             setTimeout(() => { document.getElementById('outputArea').style.display = 'none'; }, 1000);
         }
 
-        // FUNGSI 2: Simpan sebagai MS Word (.doc)
+        // FUNGSI EKSPORT WORD (Diperbaiki untuk menyokong format jadual rasmi)
         function janaMinitWord() {
             sediakanDataOutput();
             
-            // Menggunakan struktur HTML khas yang boleh dibaca oleh MS Word
-            var preHtml = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Minit Mesyuarat</title><style>body { font-family: Arial, sans-serif; } table { width: 100%; border-collapse: collapse; } td { padding: 5px; border: 1px solid #ccc; }</style></head><body>";
-            var postHtml = "</body></html>";
+            var preHtml = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+            <head><meta charset='utf-8'><title>Minit Mesyuarat</title>
+            <style>
+                body { font-family: Arial, sans-serif; font-size: 11pt; }
+                .doc-title { text-align: center; font-size: 14pt; font-weight: bold; text-transform: uppercase; margin-bottom: 20px;}
+                .meta-table { width: 100%; margin-bottom: 20px; }
+                .meta-table td { vertical-align: top; }
+                .section-title { font-weight: bold; margin-top: 20px; margin-bottom: 10px; text-decoration: underline; }
+                .table-kehadiran { width: 100%; margin-bottom: 15px; }
+                .table-kehadiran td { width: 50%; vertical-align: top; border: none; }
+                .official-table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 30px; }
+                .official-table th, .official-table td { border: 1px solid black; padding: 5px; vertical-align: top; }
+                .official-table th { font-weight: bold; text-align: left; background-color: #f2f2f2; }
+                .col-no { width: 10%; text-align: center; }
+                .col-perkara { width: 70%; }
+                .col-tindakan { width: 20%; text-align: center; font-style: italic; }
+            </style></head><body>`;
             
-            // Ambil kandungan div outputArea
+            var postHtml = "</body></html>";
             var html = preHtml + document.getElementById('outputArea').innerHTML + postHtml;
-
             var blob = new Blob(['\ufeff', html], { type: 'application/msword' });
             
-            var filename = 'Minit_Mesyuarat_' + (document.getElementById('tarikh').value || 'MIA') + '.doc';
+            var rawDate = document.getElementById('tarikh').value;
+            var d = new Date(rawDate);
+            var dateStr = rawDate ? `${d.getDate()}_${senaraiBulan[d.getMonth()]}_${d.getFullYear()}` : "MIA";
+            var filename = 'Minit_Mesyuarat_' + dateStr + '.doc';
+            
             var downloadLink = document.createElement("a");
-
             document.body.appendChild(downloadLink);
             
             if(navigator.msSaveOrOpenBlob){
@@ -214,7 +406,6 @@
                 downloadLink.download = filename;
                 downloadLink.click();
             }
-            
             document.body.removeChild(downloadLink);
         }
     </script>
