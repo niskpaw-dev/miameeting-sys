@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Kehadiran Mesyuarat | Maahad Tahfiz Ihya' Al Ahmadi</title>
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-white: #ffffff;
+        }
+
+body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'SF Pro Display', -apple-system, sans-serif;
+            background: linear-gradient(135deg, #2e0249 0%, #570a57 50%, #a91079 100%);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: var(--text-white);
+            display: flex;
+            justify-content: center;
+        }
+
+.container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+.logo-container img {
+            width: 100px; 
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+header h1 { font-size: 18px; margin: 0; letter-spacing: 1px; color: #fff; }
+        header h3 { font-weight: 300; opacity: 0.8; margin-top: 5px; font-size: 14px; }
+
+.date-display {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            margin: 20px 0;
+            border: 1px solid var(--glass-border);
+        }
+
+.form-section { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 15px; 
+            margin-bottom: 15px; 
+            text-align: left; 
+        }
+
+@media (max-width: 600px) { .form-section { grid-template-columns: 1fr; } }
+
+input {
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid var(--glass-border);
+            padding: 15px;
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            outline: none;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+input::placeholder { color: rgba(255,255,255,0.6); }
+
+.button-group { display: flex; gap: 10px; grid-column: 1 / -1; }
+
+button {
+            flex: 1; padding: 15px; border-radius: 12px; border: none;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+.btn-submit { background: linear-gradient(90deg, #27ae60, #2ecc71); color: white; }
+        .btn-absent { background: linear-gradient(90deg, #e74c3c, #c0392b); color: white; }
+
+.btn-bulk { 
+            background: linear-gradient(90deg, #3498db, #2980b9); 
+            color: white; 
+            width: 100%; 
+            margin-bottom: 25px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+
+button:hover { transform: scale(1.02); filter: brightness(1.1); }
+
+.table-container { 
+            background: rgba(0, 0, 0, 0.3); border-radius: 20px; 
+            overflow-x: auto; margin-top: 20px;
+        }
+
+table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { background: rgba(255, 255, 255, 0.1); padding: 12px; font-size: 12px; text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); font-size: 13px; text-align: left; }
+
+.badge { padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: bold; }
+        .status-hadir { background: #27ae60; color: white; }
+        .status-tidak-hadir { background: #e74c3c; color: white; }
+
+.btn-edit {
+            background: rgba(255, 255, 255, 0.1); border: 1px solid var(--glass-border);
+            color: #f1c40f; padding: 4px 8px; font-size: 10px; border-radius: 6px; cursor: pointer;
+        }
+
+.admin-controls { margin-top: 20px; display: flex; gap: 10px; }
+        .btn-admin { font-size: 11px; background: rgba(255,255,255,0.05); color: #ccc; border: 1px solid var(--glass-border); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="logo-container">
+        <img src="https://arleta.site/interactivelink/1610/LOGO-MIA.png" alt="Logo">
+    </div>
+
+<header>
+        <h1>REKOD KEHADIRAN MESYUARAT</h1>
+        <h3>(Mod Setiausaha)</h3>
+    </header>
+
+<div id="currentDate" class="date-display"></div>
+
+<div class="form-section">
+        <div>
+            <label style="font-size: 12px; margin-bottom: 5px; display: block; opacity: 0.8;">Cari Nama Ahli (Individu):</label>
+            <input list="senarai-nama" id="namaGuru" placeholder="🔍 Taip nama ahli...">
+            <datalist id="senarai-nama"></datalist>
+        </div>
+
+<div>
+            <label style="font-size: 12px; margin-bottom: 5px; display: block; opacity: 0.8;">Catatan / Sebab (Jika Ada):</label>
+            <input type="text" id="catatanAhli" placeholder="Contoh: Sakit / Urusan Keluarga">
+        </div>
+
+<div class="button-group">
+            <button class="btn-submit" onclick="rekodStatus('Hadir')">✅ SAHKAN HADIR</button>
+            <button class="btn-absent" onclick="rekodStatus('Tidak Hadir')">❌ REKOD TIDAK HADIR</button>
+        </div>
+    </div>
+
+<button class="btn-bulk" onclick="tandakanSemuaHadir()">👥 TANDAKAN SEMUA AHLI SEBAGAI "HADIR"</button>
+
+<div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th width="15%">Waktu</th>
+                    <th width="35%">Nama Ahli</th>
+                    <th width="15%">Status</th>
+                    <th width="20%">Catatan</th>
+                    <th width="15%">Tindakan</th>
+                </tr>
+            </thead>
+            <tbody id="attendanceBody"></tbody>
+        </table>
+    </div>
+
+<div class="admin-controls">
+        <button class="btn-admin" onclick="exportToCSV()">💾 Muat Turun Laporan (CSV)</button>
+        <button class="btn-admin" style="color: #ff9999;" onclick="padamSemua()">🗑️ Padam Data</button>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'ihya_final_v9'; 
+
+    // Pangkalan Data Nama (Diletakkan di sini supaya mudah diselenggara dan dipanggil sekaligus)
+    const senaraiPenuhAhli = [
+        "Tuan Haji Marsan bin Osman",
+        "Ustaz Fathul Imam bin Achmad Junaidi", "Ustaz Hazren bin Ahmad", "Ustaz Khairul Aiman bin Sahrom",
+        "Ustaz Khairymazalee Yusri bin Jaafar", "Ustaz Mohd Azmi bin Nurdin", "Ustaz Mohd Rasyid bin Mat Tusairi",
+        "Ustaz Mohd Yazid bin Ahmad", "Ustaz Muhammad Afham bin Sahrom", "Ustaz Muhammad Fadzly bin Saadon",
+        "Ustaz Muhammad Najib bin Sahril", "Ustaz Muhammad Nor Radzie bin Bohari", "Ustaz Muhammad Sukri bin Noorrusdeen",
+        "Ustaz Muhammad Syahrul Afandi bin Sabran", "Ustaz Muliadi bin Mohd Sadir", "Ustaz Nur Ikhwan bin Norahman",
+        "Ustaz Nur Wafi bin Juremi", "Ustaz Omar bin Yusoff", "Ustaz Sa’idan Wa Kariman bin Bahrom",
+        "Ustaz Usamah Al-Othmani bin Che Ismail", "Ustazah Afifat binti Ahmad", "Ustazah Azliha binti Alimin",
+        "Ustazah Farah Izzati binti Ezuddin", "Ustazah Ida Amira binti Mohamad Hamdan", "Ustazah Jamilah binti Jaffar",
+        "Ustazah Maidatul Atikah binti Mohamed Tamsir", "Ustazah Masyamah binti Samsur", "Ustazah Nadia binti Kandar",
+        "Ustazah Nor Shahidah binti Abdul Kadir", "Ustazah Norirdayani binti Mohmed Mogi", "Ustazah Norshakinah binti Mohd Shukor",
+        "Ustazah Nur Fatehah binti Bakri", "Ustazah Nur Raziqah binti Achmad Junaidi", "Ustazah Nurul Afidah binti Mohd Toridi",
+        "Ustazah Nurul Amirah binti Mohd Puadi", "Ustazah Ruzanna binti Zainal", "Ustazah Siti Aisyah binti Hamdan",
+        "Ustazah Siti Maryam binti Misran", "Ustazah Siti Norfifi Fatihah binti Maskor", "Ustazah Syazwani binti Baini",
+        "Ustazah Umi Nor Amirah binti Ahmadi", "Ahmad bin Satminan", "Fazrin bin Alias", "Kamarudin bin Satminan",
+        "Mohd Rafi bin Mat Janin", "Muhammad Abduh bin Hamdan", "Muhammad Farid bin Ahamad", "Muhammad Mawardi bin Ahmad Ramli",
+        "Salihin bin Dunawan", "Fatin Nuraini binti Masnawi", "Mariana binti Abu Bakar", "Misrinah binti Hahton",
+        "Nor Azira binti Sahri", "Noraini binti Osman", "Nur Fanzurina binti Kosnin", "Nurul Khairunisa binti Salime",
+        "Nurul Shapiqah binti Salime", "Nuur Syalina binti Mohamad", "Siti Jalilah binti Jalil"
+    ];
+
+    function janaDatalist() {
+        const datalist = document.getElementById('senarai-nama');
+        senaraiPenuhAhli.forEach(nama => {
+            const option = document.createElement('option');
+            option.value = nama;
+            datalist.appendChild(option);
+        });
+    }
+
+    function paparkanTarikh() {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('ms-MY', options);
+    }
+
+    function pamerData() {
+        const rekod = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        const tbody = document.getElementById('attendanceBody');
+        tbody.innerHTML = '';
+
+        rekod.slice().reverse().forEach((item, index) => {
+            const actualIndex = rekod.length - 1 - index;
+            const isHadir = item.status === 'Hadir';
+            const statusClass = isHadir ? 'status-hadir' : 'status-tidak-hadir';
+            const targetStatus = isHadir ? 'Tidak Hadir' : 'Hadir';
+            
+            const row = `<tr>
+                <td><small>${item.tarikhShort}</small><br><b>${item.masa}</b></td>
+                <td>${item.nama}</td>
+                <td><span class="badge ${statusClass}">${item.status.toUpperCase()}</span></td>
+                <td><small>${item.catatan || '-'}</small></td>
+                <td>
+                    <button class="btn-edit" onclick="tukarStatus(${actualIndex}, '${targetStatus}')">
+                        Ubah ke ${targetStatus}
+                    </button>
+                </td>
+            </tr>`;
+            tbody.innerHTML += row;
+        });
+    }
+
+    function rekodStatus(statusDiterima) {
+        const nama = document.getElementById('namaGuru').value.trim();
+        const catatan = document.getElementById('catatanAhli').value.trim();
+
+        if(!nama) { alert('Sila masukkan atau pilih nama ahli.'); return; }
+
+        const rekodLama = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        const masaSekarang = new Date();
+        const tarikhKey = masaSekarang.toLocaleDateString('ms-MY', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+        const sediaAda = rekodLama.find(r => r.nama === nama && r.tarikhID === tarikhKey);
+        if (sediaAda) {
+            alert(`MAAF! Nama ini sudah direkodkan sebagai ${sediaAda.status} hari ini.`);
+            return;
+        }
+
+        rekodLama.push({ 
+            tarikhID: tarikhKey,
+            tarikhShort: masaSekarang.toLocaleDateString('ms-MY', { day: '2-digit', month: 'short' }), 
+            masa: masaSekarang.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' }), 
+            nama: nama, 
+            status: statusDiterima,
+            catatan: catatan
+        });
+        
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(rekodLama));
+        document.getElementById('namaGuru').value = '';
+        document.getElementById('catatanAhli').value = '';
+        pamerData();
+    }
+
+    function tandakanSemuaHadir() {
+        if(!confirm("Adakah anda pasti mahu merekodkan 'HADIR' untuk kesemua ahli mesyuarat secara serentak?\n\n(Ahli yang telah direkodkan sebelum ini tidak akan terjejas).")) return;
+
+        let rekodLama = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        const masaSekarang = new Date();
+        const tarikhKey = masaSekarang.toLocaleDateString('ms-MY', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const masaString = masaSekarang.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+        const tarikhShort = masaSekarang.toLocaleDateString('ms-MY', { day: '2-digit', month: 'short' });
+
+        let jumlahDitambah = 0;
+
+        senaraiPenuhAhli.forEach(nama => {
+            const sediaAda = rekodLama.find(r => r.nama === nama && r.tarikhID === tarikhKey);
+            if (!sediaAda) {
+                rekodLama.push({
+                    tarikhID: tarikhKey,
+                    tarikhShort: tarikhShort,
+                    masa: masaString,
+                    nama: nama,
+                    status: 'Hadir',
+                    catatan: ''
+                });
+                jumlahDitambah++;
+            }
+        });
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(rekodLama));
+        pamerData();
+        alert(`BERJAYA!\n\nSebanyak ${jumlahDitambah} ahli mesyuarat telah didaftarkan sebagai HADIR.`);
+    }
+
+    function tukarStatus(index, statusBaru) {
+        let rekod = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        
+        // Benarkan letak sebab jika tukar ke tidak hadir
+        let catatanBaru = rekod[index].catatan;
+        if(statusBaru === 'Tidak Hadir') {
+            catatanBaru = prompt(`Sila masukkan catatan/sebab untuk ${rekod[index].nama} (Biarkan kosong jika tiada):`, catatanBaru) || "";
+        } else {
+            catatanBaru = ""; // Kosongkan catatan jika ditukar ke hadir
+        }
+
+        if(confirm(`Sahkan penukaran status ${rekod[index].nama} kepada '${statusBaru}'?`)) {
+            rekod[index].status = statusBaru;
+            rekod[index].catatan = catatanBaru;
+            rekod[index].masa = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' }) + " (Ubah)";
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(rekod));
+            pamerData();
+        }
+    }
+
+    function exportToCSV() {
+        const rekod = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        if(rekod.length === 0) return alert('Tiada data untuk dimuat turun.');
+        
+        let csvContent = "\uFEFF"; 
+        csvContent += "Tarikh,Masa,Nama,Status,Catatan\n";
+        
+        rekod.forEach(r => { 
+            csvContent += `"${r.tarikhID}","${r.masa}","${r.nama}","${r.status}","${r.catatan || '-'}"\n`; 
+        });
+
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        link.setAttribute("href", URL.createObjectURL(blob));
+        link.setAttribute("download", `Laporan_Kehadiran_MIA_${new Date().toLocaleDateString('ms-MY')}.csv`);
+        link.click();
+    }
+
+    function padamSemua() {
+        if(confirm('AMARAN! Semua rekod akan dipadamkan secara kekal. Pastikan anda telah memuat turun laporan terlebih dahulu.')) {
+            localStorage.removeItem(STORAGE_KEY);
+            pamerData();
+        }
+    }
+
+    window.onload = function() { 
+        janaDatalist(); 
+        paparkanTarikh(); 
+        pamerData(); 
+    };
+</script>
+
+</body>
+</html>

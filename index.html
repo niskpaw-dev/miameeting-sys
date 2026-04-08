@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Penjana Minit - MIA (Full Auto)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #7e22ce; 
+            --primary-hover: #6b21a8;
+            --primary-light: #f3e8ff;
+            --bg-color: #f8fafc;
+            --text-main: #1e293b;
+        }
+
+        body { font-family: 'Poppins', sans-serif; background: var(--bg-color); color: var(--text-main); padding: 20px; margin: 0; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; background: #fff; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(126, 34, 206, 0.08); }
+        .logo-container { text-align: center; margin-bottom: 10px; }
+        .logo-img { max-height: 90px; object-fit: contain; }
+        h2.title { color: var(--primary); text-align: center; font-weight: 700; margin-bottom: 30px; }
+        
+        .form-group { margin-bottom: 20px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        label { font-weight: 600; display: block; margin-bottom: 8px; font-size: 0.95rem; }
+        
+        .label-with-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .btn-sync { background: #27ae60; color: white; border: none; padding: 5px 12px; font-size: 0.8rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: 0.2s; }
+        .btn-sync:hover { background: #219150; transform: scale(1.05); }
+
+        input, textarea { width: 100%; padding: 12px 15px; border: 2px solid #e2e8f0; border-radius: 10px; box-sizing: border-box; font-family: 'Poppins', sans-serif; font-size: 1rem; }
+        input:focus, textarea:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-light); }
+        
+        .btn-utama { margin-top: 10px; width: 100%; background: linear-gradient(135deg, var(--primary), var(--primary-hover)); color: white; border: none; padding: 15px; font-size: 1.1rem; font-weight: 600; border-radius: 10px; cursor: pointer; box-shadow: 0 4px 12px rgba(126, 34, 206, 0.3); }
+
+        #outputArea { display: none; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; padding: 0; max-width: 100%; }
+            #formArea { display: none; } 
+            #outputArea { display: block; }
+            .header-print { text-align: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 20px; }
+            .logo-print { max-height: 110px; margin-bottom: 15px; }
+            .details-box { background: #f8fafc; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0; }
+            h4 { color: var(--primary); border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-top: 25px;}
+            .content-print { white-space: pre-wrap; text-align: justify; }
+            .signature-area { display: flex; justify-content: space-between; margin-top: 60px; }
+            .signature-box { text-align: center; width: 40%; }
+            .signature-line { border-bottom: 1px dashed #000; margin: 50px 0 10px 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="formArea">
+            <div class="logo-container">
+                <img src="https://arleta.site/interactivelink/1610/LOGO-MIA.png" alt="Logo" class="logo-img">
+            </div>
+            <h2 class="title">Penjana Minit Automatik</h2>
+            
+            <div class="form-group">
+                <label>Tajuk Mesyuarat</label>
+                <input type="text" id="tajuk" placeholder="Cth: Mesyuarat AJK Kali Ke-4">
+            </div>
+            
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Pilih Tarikh Mesyuarat</label>
+                    <input type="date" id="tarikh" onchange="autoTarikData()">
+                </div>
+                <div class="form-group">
+                    <label>Masa</label>
+                    <input type="time" id="masa">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="label-with-action">
+                    <label style="margin-bottom: 0;">Senarai Kehadiran</label>
+                    <button type="button" class="btn-sync" onclick="autoTarikData()">🔄 Sync Data Hari Ini</button>
+                </div>
+                <textarea id="kehadiran" rows="6" placeholder="Pilih tarikh untuk menarik data kehadiran secara automatik..."></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Perbincangan & Keputusan</label>
+                <textarea id="agenda" rows="8"></textarea>
+            </div>
+            
+            <button class="btn-utama" onclick="janaMinit()">Jana & Simpan PDF</button>
+        </div>
+
+        <div id="outputArea">
+            <div class="header-print">
+                <img src="https://arleta.site/interactivelink/1610/LOGO-MIA.png" class="logo-print">
+                <h2 style="text-transform: uppercase;">Maahad Tahfiz Ihya' Al Ahmadi</h2>
+                <h3 id="outTajuk"></h3>
+            </div>
+            <div class="details-box">
+                <p><strong>Tarikh:</strong> <span id="outTarikh"></span> | <strong>Masa:</strong> <span id="outMasa"></span></p>
+            </div>
+            <h4>1.0 Kehadiran</h4>
+            <div id="outKehadiran" class="content-print"></div>
+            <h4>2.0 Perbincangan & Keputusan</h4>
+            <div id="outAgenda" class="content-print"></div>
+            <div class="signature-area">
+                <div class="signature-box"><div class="signature-line"></div><p>(Setiausaha)</p></div>
+                <div class="signature-box"><div class="signature-line"></div><p>(Pengerusi)</p></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'ihya_final_v9'; // Kunci yang sama dengan sistem kehadiran anda
+
+        function autoTarikData() {
+            const tarikhInput = document.getElementById('tarikh').value;
+            if(!tarikhInput) return;
+
+            // Formatkan tarikh input (YYYY-MM-DD) kepada (DD/MM/YYYY) supaya sama dengan tarikhID dalam localStorage
+            const d = new Date(tarikhInput);
+            const tarikhID = `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
+
+            // Tarik data dari localStorage
+            const rekodSediaAda = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+            
+            // Tapis hanya yang hadir pada tarikh tersebut
+            const senaraiHadir = rekodSediaAda
+                .filter(item => item.tarikhID === tarikhID && item.status === 'Hadir')
+                .map((item, index) => `${index + 1}. ${item.nama}`);
+
+            if(senaraiHadir.length > 0) {
+                document.getElementById('kehadiran').value = senaraiHadir.join('\n');
+            } else {
+                document.getElementById('kehadiran').value = "Tiada data kehadiran ditemui untuk tarikh " + tarikhID;
+            }
+        }
+
+        function formatTarikh(inputDate) {
+            if (!inputDate) return "";
+            const date = new Date(inputDate);
+            return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+        }
+
+        function formatMasa(inputTime) {
+            if (!inputTime) return "";
+            let [hours, minutes] = inputTime.split(':');
+            let ampm = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12;
+            return `${hours}:${minutes} ${ampm}`;
+        }
+
+        function janaMinit() {
+            document.getElementById('outTajuk').innerText = document.getElementById('tajuk').value;
+            document.getElementById('outTarikh').innerText = formatTarikh(document.getElementById('tarikh').value);
+            document.getElementById('outMasa').innerText = formatMasa(document.getElementById('masa').value);
+            document.getElementById('outKehadiran').innerText = document.getElementById('kehadiran').value;
+            document.getElementById('outAgenda').innerText = document.getElementById('agenda').value;
+            
+            document.getElementById('outputArea').style.display = 'block';
+            window.print();
+            setTimeout(() => { document.getElementById('outputArea').style.display = 'none'; }, 1000);
+        }
+    </script>
+</body>
+</html>
