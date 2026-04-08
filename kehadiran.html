@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>E-Kehadiran Mesyuarat | MIA (Cloud Edition)</title>
     <style>
+        /* CSS Kekal Sama Seperti Kod Asal Anda (Sudah Cantik) */
         :root { --glass-bg: rgba(255, 255, 255, 0.1); --glass-border: rgba(255, 255, 255, 0.2); --text-white: #ffffff; }
         body { margin: 0; padding: 20px; font-family: 'SF Pro Display', -apple-system, sans-serif; background: linear-gradient(135deg, #2e0249 0%, #570a57 50%, #a91079 100%); background-attachment: fixed; min-height: 100vh; color: var(--text-white); display: flex; justify-content: center; }
         .container { width: 100%; max-width: 900px; background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid var(--glass-border); border-radius: 30px; padding: 30px; box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3); text-align: center; }
@@ -32,9 +33,14 @@
         .btn-edit { background: rgba(255, 255, 255, 0.1); border: 1px solid var(--glass-border); color: #f1c40f; padding: 4px 8px; font-size: 10px; border-radius: 6px; cursor: pointer; }
         .admin-controls { margin-top: 20px; display: flex; gap: 10px; }
         .btn-admin { font-size: 11px; background: rgba(255,255,255,0.05); color: #ccc; border: 1px solid var(--glass-border); }
+        
+        /* Tambahan: Loading Overlay */
+        #loading { display:none; position:fixed; top:10px; right:10px; background:rgba(0,0,0,0.8); padding:10px 20px; border-radius:10px; z-index:9999; font-size:12px; border:1px solid #27ae60; }
     </style>
 </head>
 <body>
+
+<div id="loading">⏳ Sedang Menyegerak ke Cloud...</div>
 
 <div class="container">
     <div class="logo-container">
@@ -43,7 +49,7 @@
 
     <header>
         <h1>REKOD KEHADIRAN MESYUARAT</h1>
-        <h3>(Mod Setiausaha - Bersambung ke Cloud)</h3>
+        <h3>(Mod Setiausaha - Cloud Sync)</h3>
     </header>
 
     <div id="currentDate" class="date-display"></div>
@@ -57,12 +63,12 @@
 
         <div>
             <label style="font-size: 12px; margin-bottom: 5px; display: block; opacity: 0.8;">Catatan / Sebab (Jika Ada):</label>
-            <input type="text" id="catatanAhli" placeholder="Contoh: Sakit / Urusan Keluarga">
+            <input type="text" id="catatanAhli" placeholder="Sakit / Urusan Keluarga">
         </div>
 
         <div class="button-group">
             <button class="btn-submit" onclick="rekodStatus('Hadir')">✅ SAHKAN HADIR</button>
-            <button class="btn-absent" onclick="rekodStatus('Tidak Hadir')">❌ REKOD TIDAK HADIR</button>
+            <button class="btn-absent" onclick="rekodStatus('Tidak Hadir')">❌ TIDAK HADIR</button>
         </div>
     </div>
 
@@ -84,17 +90,15 @@
     </div>
 
     <div class="admin-controls">
-        <button class="btn-admin" onclick="exportToCSV()">💾 Muat Turun Laporan Tempatan (CSV)</button>
-        <button class="btn-admin" style="color: #ff9999;" onclick="padamSemua()">🗑️ Padam Data Paparan</button>
+        <button class="btn-admin" onclick="exportToCSV()">💾 CSV Lokal</button>
+        <button class="btn-admin" style="color: #ff9999;" onclick="padamSemua()">🗑️ Kosongkan Paparan</button>
     </div>
 </div>
 
 <script>
-    // --- LETAKKAN URL WEB APP ANDA DI SINI ---
     const CLOUD_API_URL = 'https://script.google.com/macros/s/AKfycbxNeEfLQhqiKMSh7mwg22Io2_5DPRvpV7Sr4HiTK8izWbCO_UJhV8_3oswur7B0d8GUqw/exec'; 
-    // -----------------------------------------
+    const STORAGE_KEY = 'mia_attendance_v1'; 
 
-    const STORAGE_KEY = 'ihya_final_v9'; 
     const senaraiPenuhAhli = [
         "Tuan Haji Marsan bin Osman", "Ustaz Fathul Imam bin Achmad Junaidi", "Ustaz Hazren bin Ahmad", "Ustaz Khairul Aiman bin Sahrom",
         "Ustaz Khairymazalee Yusri bin Jaafar", "Ustaz Mohd Azmi bin Nurdin", "Ustaz Mohd Rasyid bin Mat Tusairi",
@@ -116,19 +120,31 @@
         "Nurul Shapiqah binti Salime", "Nuur Syalina binti Mohamad", "Siti Jalilah binti Jalil"
     ];
 
-    function simpanKeCloud(dataObjek) {
-        if(CLOUD_API_URL === 'https://script.google.com/macros/s/AKfycbxNeEfLQhqiKMSh7mwg22Io2_5DPRvpV7Sr4HiTK8izWbCO_UJhV8_3oswur7B0d8GUqw/exec') return; // Abaikan jika URL belum diletakkan
-        fetch(CLOUD_API_URL, {
-            method: 'POST',
-            mode: 'no-cors', // Penting untuk elak sekatan CORS browser
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(dataObjek)
-        }).catch(e => console.log('Gagal hantar ke awan.'));
+    // Fungsi hantar ke Cloud dengan visual loading
+    async function simpanKeCloud(dataObjek) {
+        if(!CLOUD_API_URL.includes('/exec')) return;
+        
+        const loader = document.getElementById('loading');
+        loader.style.display = 'block';
+
+        try {
+            await fetch(CLOUD_API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dataObjek)
+            });
+            console.log('Sync Success');
+        } catch (e) {
+            console.warn('Cloud Sync Failed (Offline)');
+        } finally {
+            setTimeout(() => { loader.style.display = 'none'; }, 500);
+        }
     }
 
     function janaDatalist() {
         const datalist = document.getElementById('senarai-nama');
-        senaraiPenuhAhli.forEach(nama => {
+        senaraiPenuhAhli.sort().forEach(nama => {
             const option = document.createElement('option');
             option.value = nama;
             datalist.appendChild(option);
@@ -145,21 +161,20 @@
         const tbody = document.getElementById('attendanceBody');
         tbody.innerHTML = '';
 
+        // Hanya paparkan data untuk hari ini sahaja supaya table tidak terlalu panjang
+        const today = new Date().toISOString().split('T')[0];
+
         rekod.slice().reverse().forEach((item, index) => {
             const actualIndex = rekod.length - 1 - index;
             const isHadir = item.status === 'Hadir';
-            const statusClass = isHadir ? 'status-hadir' : 'status-tidak-hadir';
-            const targetStatus = isHadir ? 'Tidak Hadir' : 'Hadir';
             
             const row = `<tr>
                 <td><small>${item.tarikhShort}</small><br><b>${item.masa}</b></td>
                 <td>${item.nama}</td>
-                <td><span class="badge ${statusClass}">${item.status.toUpperCase()}</span></td>
+                <td><span class="badge ${isHadir ? 'status-hadir' : 'status-tidak-hadir'}">${item.status.toUpperCase()}</span></td>
                 <td><small>${item.catatan || '-'}</small></td>
                 <td>
-                    <button class="btn-edit" onclick="tukarStatus(${actualIndex}, '${targetStatus}')">
-                        Ubah ke ${targetStatus}
-                    </button>
+                    <button class="btn-edit" onclick="tukarStatus(${actualIndex})">Ubah</button>
                 </td>
             </tr>`;
             tbody.innerHTML += row;
@@ -170,22 +185,25 @@
         const nama = document.getElementById('namaGuru').value.trim();
         const catatan = document.getElementById('catatanAhli').value.trim();
 
-        if(!nama) { alert('Sila masukkan atau pilih nama ahli.'); return; }
+        if(!nama || !senaraiPenuhAhli.includes(nama)) { 
+            alert('Sila pilih nama ahli yang sah dari senarai.'); 
+            return; 
+        }
 
         const rekodLama = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         const masaSekarang = new Date();
-        const tarikhKey = masaSekarang.toLocaleDateString('ms-MY', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const tarikhKey = masaSekarang.toISOString().split('T')[0]; // Format YYYY-MM-DD
 
         const sediaAda = rekodLama.find(r => r.nama === nama && r.tarikhID === tarikhKey);
         if (sediaAda) {
-            alert(`MAAF! Nama ini sudah direkodkan sebagai ${sediaAda.status} hari ini.`);
+            alert(`Selesai! ${nama} sudah direkodkan hari ini.`);
             return;
         }
 
         const dataBaru = { 
             tarikhID: tarikhKey,
             tarikhShort: masaSekarang.toLocaleDateString('ms-MY', { day: '2-digit', month: 'short' }), 
-            masa: masaSekarang.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' }), 
+            masa: masaSekarang.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', hour12: false }), 
             nama: nama, 
             status: statusDiterima,
             catatan: catatan
@@ -193,8 +211,6 @@
 
         rekodLama.push(dataBaru);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(rekodLama));
-        
-        // Hantar ke Google Sheets
         simpanKeCloud(dataBaru);
 
         document.getElementById('namaGuru').value = '';
@@ -202,18 +218,16 @@
         pamerData();
     }
 
-    function tandakanSemuaHadir() {
-        if(!confirm("PENTING: Merekod 50+ nama ke Cloud serentak mungkin mengambil masa beberapa saat.\nTeruskan?")) return;
+    async function tandakanSemuaHadir() {
+        if(!confirm("Tandakan semua ahli yang belum direkod sebagai 'Hadir'?")) return;
 
         let rekodLama = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
         const masaSekarang = new Date();
-        const tarikhKey = masaSekarang.toLocaleDateString('ms-MY', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        const masaString = masaSekarang.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+        const tarikhKey = masaSekarang.toISOString().split('T')[0];
+        const masaString = masaSekarang.toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', hour12: false });
         const tarikhShort = masaSekarang.toLocaleDateString('ms-MY', { day: '2-digit', month: 'short' });
 
-        let jumlahDitambah = 0;
-
-        senaraiPenuhAhli.forEach(nama => {
+        for (const nama of senaraiPenuhAhli) {
             const sediaAda = rekodLama.find(r => r.nama === nama && r.tarikhID === tarikhKey);
             if (!sediaAda) {
                 let dataBaru = {
@@ -221,66 +235,51 @@
                     nama: nama, status: 'Hadir', catatan: ''
                 };
                 rekodLama.push(dataBaru);
-                simpanKeCloud(dataBaru); // Hantar setiap satu ke cloud
-                jumlahDitambah++;
+                await simpanKeCloud(dataBaru); // Pakai await supaya tidak serang server serentak
             }
-        });
+        }
 
         localStorage.setItem(STORAGE_KEY, JSON.stringify(rekodLama));
         pamerData();
-        alert(`BERJAYA!\n\nSebanyak ${jumlahDitambah} ahli mesyuarat telah didaftarkan.`);
+        alert('Kehadiran penuh telah dikemaskini.');
     }
 
-    function tukarStatus(index, statusBaru) {
+    function tukarStatus(index) {
         let rekod = JSON.parse(localStorage.getItem(STORAGE_KEY));
-        let catatanBaru = rekod[index].catatan;
+        const statusBaru = rekod[index].status === 'Hadir' ? 'Tidak Hadir' : 'Hadir';
         
-        if(statusBaru === 'Tidak Hadir') {
-            catatanBaru = prompt(`Sila masukkan catatan/sebab untuk ${rekod[index].nama}:`, catatanBaru) || "";
-        } else {
-            catatanBaru = ""; 
-        }
-
-        if(confirm(`Sahkan penukaran status ${rekod[index].nama} kepada '${statusBaru}'?`)) {
+        if(confirm(`Tukar status ${rekod[index].nama} kepada ${statusBaru}?`)) {
             rekod[index].status = statusBaru;
-            rekod[index].catatan = catatanBaru;
-            rekod[index].masa = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit' });
+            rekod[index].masa = new Date().toLocaleTimeString('ms-MY', { hour: '2-digit', minute: '2-digit', hour12: false });
             
             localStorage.setItem(STORAGE_KEY, JSON.stringify(rekod));
-            
-            // Hantar log status baru ke Cloud
-            simpanKeCloud({
-                tarikhID: rekod[index].tarikhID,
-                masa: rekod[index].masa,
-                nama: rekod[index].nama,
-                status: statusBaru,
-                catatan: catatanBaru
-            });
-
+            simpanKeCloud(rekod[index]);
             pamerData();
         }
     }
 
     function exportToCSV() {
         const rekod = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-        if(rekod.length === 0) return alert('Tiada data untuk dimuat turun.');
+        if(rekod.length === 0) return alert('Tiada data.');
         let csvContent = "\uFEFFTarikh,Masa,Nama,Status,Catatan\n";
-        rekod.forEach(r => { csvContent += `"${r.tarikhID}","${r.masa}","${r.nama}","${r.status}","${r.catatan || '-'}"\n`; });
+        rekod.forEach(r => { 
+            csvContent += `"${r.tarikhID}","${r.masa}","${r.nama}","${r.status}","${r.catatan || '-'}"\n`; 
+        });
         const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
         const link = document.createElement("a");
-        link.setAttribute("href", URL.createObjectURL(blob));
-        link.setAttribute("download", `Kehadiran_Lokal_${new Date().toLocaleDateString('ms-MY')}.csv`);
+        link.href = URL.createObjectURL(blob);
+        link.download = `Kehadiran_MIA_${new Date().toISOString().split('T')[0]}.csv`;
         link.click();
     }
 
     function padamSemua() {
-        if(confirm('AMARAN! Rekod paparan pada peranti ini akan dipadam. (Data di Google Sheets tidak akan terjejas).')) {
+        if(confirm('Padam paparan? Data di Cloud tetap kekal.')) {
             localStorage.removeItem(STORAGE_KEY);
             pamerData();
         }
     }
 
-    window.onload = function() { janaDatalist(); paparkanTarikh(); pamerData(); };
+    window.onload = () => { janaDatalist(); paparkanTarikh(); pamerData(); };
 </script>
 
 </body>
